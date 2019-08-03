@@ -21,9 +21,10 @@ class Confluent {
     fun createTopic(payload: String, namespace: String, event: String): String {
         val jsonFormattedPayload = JSONObject(payload)
         logger.debug(String.format("#### -> Publishing to topic -> %s", (namespace + "." + event)))
-        val jsonData = jsonFormattedPayload.getJSONObject("data")
-        val topicName = namespace + "." + event
-        createProducer().send(ProducerRecord(topicName, jsonData.toString()))
+        val jsonPayloadToTopic = JSONObject()
+        jsonPayloadToTopic.put("eventType", namespace + "/" + event)
+        jsonPayloadToTopic.put("data", jsonFormattedPayload.getJSONObject("data"))
+        createProducer().send(ProducerRecord(namespace, jsonPayloadToTopic.toString()))
         return "success"
     }
 }
