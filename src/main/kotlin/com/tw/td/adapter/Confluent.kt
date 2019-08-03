@@ -1,6 +1,7 @@
 package com.tw.td.adapter
 
 import com.tw.td.Namespace
+import khttp.responses.Response
 import org.apache.kafka.clients.admin.AdminClient
 import org.apache.kafka.clients.admin.NewTopic
 import org.jboss.logging.Logger
@@ -9,9 +10,16 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.StringSerializer
 import java.util.*
 import org.json.JSONObject
+import org.springframework.http.HttpHeaders
+import org.springframework.http.MediaType
+import org.springframework.web.client.RestTemplate
 
 class Confluent {
     val logger = Logger.getLogger(Confluent::class.java)
+
+    companion object {
+        private val restTemplate = RestTemplate()
+    }
 
     private fun getProperties(): Properties {
         val props = Properties()
@@ -29,13 +37,28 @@ class Confluent {
         return AdminClient.create(getProperties())
     }
 
+    private fun createPublisherStream(namespace: String): Any {
+        val headers = HttpHeaders()
+        headers.contentType = MediaType.APPLICATION_JSON
+
+        val streamQuery = "CREATE STREAM " + namespace + "_stream" + "(eventType VARCHAR, data VARCHAR) WITH (KAFKA_TOPIC='" + namespace + "', VALUE_FORMAT='JSON');"
+        val response: Response = khttp.post(
+                url = "http://localhost:8088/ksql",
+                json = mapOf("ksql" to streamQuery))
+        val obj: JSONObject = response.jsonObject
+        logger.debug(obj)
+        return "some"
+    }
+
     fun createPublisherTopic(namespace: Namespace): String {
         val newTopic = NewTopic(namespace.id, 1, 1.toShort())
         val collections = ArrayList<NewTopic>()
         collections.add(newTopic)
         createAdminClient().createTopics(collections)
+        logger.debug(createPublisherStream(namespace.id!!))
         return "topic created"
     }
+
 
     fun publishEvent(payload: String, namespace: String, event: String): String {
         val jsonFormattedPayload = JSONObject(payload)

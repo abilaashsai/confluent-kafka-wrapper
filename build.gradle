@@ -29,5 +29,6 @@ dependencies {
     compile "org.springframework.boot:spring-boot-starter-web"
     compile 'org.springframework.kafka:spring-kafka'
     compile 'org.json:json:20180813'
+    compile 'khttp:khttp:0.1.0'
     testCompile('org.springframework.boot:spring-boot-starter-test')
 }
