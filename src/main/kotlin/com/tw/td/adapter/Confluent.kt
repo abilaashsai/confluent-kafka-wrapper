@@ -1,6 +1,8 @@
 package com.tw.td.adapter
 
+import com.tw.td.Namespace
 import org.apache.kafka.clients.admin.AdminClient
+import org.apache.kafka.clients.admin.NewTopic
 import org.jboss.logging.Logger
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -27,7 +29,15 @@ class Confluent {
         return AdminClient.create(getProperties())
     }
 
-    fun createTopic(payload: String, namespace: String, event: String): String {
+    fun createPublisherTopic(namespace: Namespace): String {
+        val newTopic = NewTopic(namespace.id, 1, 1.toShort())
+        val collections = ArrayList<NewTopic>()
+        collections.add(newTopic)
+        createAdminClient().createTopics(collections)
+        return "topic created"
+    }
+
+    fun publishEvent(payload: String, namespace: String, event: String): String {
         val jsonFormattedPayload = JSONObject(payload)
         logger.debug(String.format("#### -> Publishing to topic -> %s", (namespace + "." + event)))
         val jsonPayloadToTopic = JSONObject()
@@ -37,7 +47,7 @@ class Confluent {
         return "success"
     }
 
-    fun listTopics(): List<String>? {
+    fun listTopics(): List<String> {
         val adminClient = createAdminClient()
         val data = adminClient.listTopics()
         val availableTopics = data.namesToListings().get()

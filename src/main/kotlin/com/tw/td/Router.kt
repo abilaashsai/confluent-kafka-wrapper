@@ -8,12 +8,16 @@ class Router {
 
     val confluent = Confluent()
 
+    @PostMapping("/namespace")
+    fun createNamespace(@RequestBody namespace: Namespace): String = confluent.createPublisherTopic(namespace)
+
     @PostMapping("/{namespace}/event/{event}")
     fun publishEvent(@RequestBody payload: String,
                      @PathVariable namespace: String,
-                     @PathVariable event: String) = confluent.createTopic(payload, namespace, event)
+                     @PathVariable event: String): String = confluent.publishEvent(payload, namespace, event)
+
 
     @GetMapping("/listtopics")
-    fun listTopics(): List<String>? = confluent.listTopics()
+    fun listTopics(): List<String> = confluent.listTopics()
 
 }
