@@ -12,14 +12,9 @@ import java.util.*
 import org.json.JSONObject
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
-import org.springframework.web.client.RestTemplate
 
 class Confluent {
     val logger = Logger.getLogger(Confluent::class.java)
-
-    companion object {
-        private val restTemplate = RestTemplate()
-    }
 
     private fun getProperties(): Properties {
         val props = Properties()
@@ -47,7 +42,7 @@ class Confluent {
                 json = mapOf("ksql" to streamQuery))
         val obj: JSONObject = response.jsonObject
         logger.debug(obj)
-        return "some"
+        return "stream created successfully"
     }
 
     fun createPublisherTopic(namespace: Namespace): String {
