@@ -41,7 +41,7 @@ class Confluent {
     }
 
     private fun createPublisherStream(namespace: String): Any {
-        val streamQuery = """CREATE STREAM stream$namespace
+        val streamQuery = """CREATE STREAM stream_$namespace
             (eventType VARCHAR, data VARCHAR)
             WITH (KAFKA_TOPIC='$namespace', VALUE_FORMAT='JSON');"""
         return ksqlRequest(streamQuery)
