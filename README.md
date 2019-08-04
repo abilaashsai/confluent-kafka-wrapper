@@ -16,7 +16,7 @@ It uses [KSQL](https://www.confluent.io/product/ksql/) to read and write into to
 2. curl -X POST -H "Content-Type:application/json" -d '{"data":<DATA>}' http://localhost:8080/<NAMESPACE_NAME>/event/<EVENT_NAME>
   
 ### Subscribe to Event
-3. curl -X POST -H "Content-Type:application/json" -d '{ "name": "<SUBSCRIPTION_NAME>", "namespace":"<NAMESPACE>", "filter": ["<filter_1>","<filter_2>"], "notification": {"url": "https://cf1b7e50.ngrok.io"} }' http://localhost:8080/subscription
+3. curl -X POST -H "Content-Type:application/json" -d '{ "name": "<SUBSCRIPTION_NAME>", "namespace":"<NAMESPACE_NAME>", "filter": ["<filter_1>","<filter_2>"], "notification": {"url": "https://cf1b7e50.ngrok.io"} }' http://localhost:8080/subscription
 
 ### Dev usage
 
