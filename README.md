@@ -14,7 +14,7 @@ It uses [KSQL](https://www.confluent.io/product/ksql/) to read and write into to
 ### Create Namespace
 1. curl -X POST -H "Content-Type:application/json" -d '{"id":"<NAMESPACE_NAME>", "description":"description"}' http://localhost:8080/namespace
   
-### Publish to Event
+### Publish an Event to Namespace
 2. curl -X POST -H "Content-Type:application/json" -d '{"data":<DATA>}' http://localhost:8080/<NAMESPACE_NAME>/event/<EVENT_NAME>
   
 ### Subscribe to Event
