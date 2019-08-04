@@ -4,6 +4,8 @@ It uses [KSQL](https://www.confluent.io/product/ksql/) to read and write into to
 
 ## Setup
 1. Download and install [confluent platform](https://www.confluent.io/product/confluent-platform/)
+2. Run Confluent
+3. Install [Confluent HTTP Connector](https://www.confluent.io/connector/kafka-connect-http)
 2. ./gradlew build
 3. ./gradlew bootRun
 
