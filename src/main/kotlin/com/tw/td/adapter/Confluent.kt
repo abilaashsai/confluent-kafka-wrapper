@@ -8,6 +8,7 @@ import org.jboss.logging.Logger
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.StringSerializer
+import org.json.JSONArray
 import java.util.*
 import org.json.JSONObject
 import org.springframework.http.HttpHeaders
@@ -38,10 +39,11 @@ class Confluent {
         headers.contentType = MediaType.APPLICATION_JSON
 
         val streamQuery = "CREATE STREAM " + namespace + "_stream" + "(eventType VARCHAR, data VARCHAR) WITH (KAFKA_TOPIC='" + namespace + "', VALUE_FORMAT='JSON');"
+        Thread.sleep(8000)
         val response: Response = khttp.post(
                 url = "http://localhost:8088/ksql",
                 json = mapOf("ksql" to streamQuery))
-        val obj: JSONObject = response.jsonObject
+        val obj: JSONArray = response.jsonArray
         logger.debug(obj)
         return "stream created successfully"
     }
@@ -59,7 +61,7 @@ class Confluent {
 
     fun publishEvent(payload: String, namespace: String, event: String): String {
         val jsonFormattedPayload = JSONObject(payload)
-        logger.debug(String.format("#### -> Publishing to topic -> %s", (namespace + "." + event)))
+        logger.debug(String.format("#### -> Publishing to topic -> %s", namespace))
         val jsonPayloadToTopic = JSONObject()
         jsonPayloadToTopic.put("eventType", event)
         jsonPayloadToTopic.put("data", jsonFormattedPayload.getJSONObject("data"))
@@ -84,7 +86,7 @@ class Confluent {
         val jsonFormattedPayload = JSONObject(payload)
         val subscriptionName = jsonFormattedPayload.getString("name")
         val namespaceName = jsonFormattedPayload.getString("namespace")
-        val newTopic = NewTopic(subscriptionName, 1, 1.toShort())
+        val newTopic = NewTopic("sub_$subscriptionName", 1, 1.toShort())
         val collections = ArrayList<NewTopic>()
         collections.add(newTopic)
         createAdminClient().createTopics(collections)
@@ -98,11 +100,12 @@ class Confluent {
     private fun createConsumerStream(namespace: String, subscription: String, filterStatement: String): Any {
         val headers = HttpHeaders()
         headers.contentType = MediaType.APPLICATION_JSON
-        val streamQuery = "CREATE STREAM sub_" + subscription + " AS SELECT data FROM " + namespace + "_stream WHERE " + filterStatement
+        val streamQuery = "CREATE STREAM sub_" + subscription + " AS SELECT data FROM " + namespace + "_stream WHERE " + filterStatement + ";"
+        Thread.sleep(8000)
         val response: Response = khttp.post(
                 url = "http://localhost:8088/ksql",
                 json = mapOf("ksql" to streamQuery))
-        val obj: JSONObject = response.jsonObject
+        val obj: JSONArray = response.jsonArray
         logger.debug(obj)
         return "stream created successfully"
     }
