@@ -12,6 +12,7 @@ import java.util.*
 import org.json.JSONObject
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
+import kotlin.collections.ArrayList
 
 class Confluent {
     val logger = Logger.getLogger(Confluent::class.java)
@@ -77,6 +78,33 @@ class Confluent {
         }.map { y -> y.key })
 
         return topics
+    }
+
+    fun subscribeEvent(payload: String): String {
+        val jsonFormattedPayload = JSONObject(payload)
+        val subscriptionName = jsonFormattedPayload.getString("name")
+        val namespaceName = jsonFormattedPayload.getString("namespace")
+        val newTopic = NewTopic(subscriptionName, 1, 1.toShort())
+        val collections = ArrayList<NewTopic>()
+        collections.add(newTopic)
+        createAdminClient().createTopics(collections)
+        val filterStatement = jsonFormattedPayload.getJSONArray("filter")
+                .map { filter -> "eventType='$filter'" }.joinToString(separator = " OR ")
+        createConsumerStream(namespaceName, subscriptionName, filterStatement)
+
+        return "success"
+    }
+
+    private fun createConsumerStream(namespace: String, subscription: String, filterStatement: String): Any {
+        val headers = HttpHeaders()
+        headers.contentType = MediaType.APPLICATION_JSON
+        val streamQuery = "CREATE STREAM sub_" + subscription + " AS SELECT data FROM " + namespace + "_stream WHERE " + filterStatement
+        val response: Response = khttp.post(
+                url = "http://localhost:8088/ksql",
+                json = mapOf("ksql" to streamQuery))
+        val obj: JSONObject = response.jsonObject
+        logger.debug(obj)
+        return "stream created successfully"
     }
 
 }

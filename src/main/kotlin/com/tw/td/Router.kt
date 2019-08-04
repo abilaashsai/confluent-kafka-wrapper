@@ -17,6 +17,9 @@ class Router {
                      @PathVariable event: String): String = confluent.publishEvent(payload, namespace, event)
 
 
+    @PostMapping("/subscription")
+    fun subscription(@RequestBody payload: String): String = confluent.subscribeEvent(payload)
+
     @GetMapping("/listtopics")
     fun listTopics(): List<String> = confluent.listTopics()
 
