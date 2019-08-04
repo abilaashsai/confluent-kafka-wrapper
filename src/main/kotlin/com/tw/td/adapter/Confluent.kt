@@ -47,6 +47,37 @@ class Confluent {
         return ksqlRequest(streamQuery)
     }
 
+    private fun createConnector(url: String, subscriptionName: String): Any {
+        val subscriptionName = subscriptionName.toUpperCase()
+        val response: Response = khttp.post(
+                url = "http://localhost:8083/connectors",
+                json = mapOf("name" to subscriptionName,
+                        "config" to mapOf("connector.class" to "io.confluent.connect.http.HttpSinkConnector",
+                                "tasks.max" to "1",
+                                "http.api.url" to url,
+                                "topics" to "SUB_$subscriptionName",
+                                "headers" to "Content-Type:application/vnd.kafka.json.v2+json|Accept:application/vnd.kafka.v2+json",
+                                "value.converter" to "org.apache.kafka.connect.storage.StringConverter",
+                                "confluent.topic.bootstrap.servers" to "localhost:9092",
+                                "confluent.topic.replication.factor" to "1"
+                        )),
+                headers = mapOf("Content-Type" to "application/json"))
+
+        logger.debug(response)
+        return response
+
+    }
+
+    private fun createConsumerStream(namespace: String,
+                                     subscription: String,
+                                     filterStatement: String): Any {
+        val streamQuery = """CREATE STREAM sub_$subscription
+            AS SELECT data
+            FROM stream_$namespace
+            WHERE $filterStatement;"""
+        return ksqlRequest(streamQuery)
+    }
+
     fun createPublisherTopic(namespace: Namespace): String {
         val newTopic = NewTopic(namespace.id, 1, 1.toShort())
 
@@ -86,36 +117,6 @@ class Confluent {
         return topics
     }
 
-    fun createConsumerStream(namespace: String,
-                             subscription: String,
-                             filterStatement: String): Any {
-        val streamQuery = """CREATE STREAM sub_$subscription
-            AS SELECT data
-            FROM stream_$namespace
-            WHERE $filterStatement;"""
-        return ksqlRequest(streamQuery)
-    }
-
-    private fun createConnector(url: String, subscriptionName: String): Any {
-        val subscriptionName = subscriptionName.toUpperCase()
-        val response: Response = khttp.post(
-                url = "http://localhost:8083/connectors",
-                json = mapOf("name" to subscriptionName,
-                        "config" to mapOf("connector.class" to "io.confluent.connect.http.HttpSinkConnector",
-                                "tasks.max" to "1",
-                                "http.api.url" to url,
-                                "topics" to "SUB_$subscriptionName",
-                                "headers" to "Content-Type:application/vnd.kafka.json.v2+json|Accept:application/vnd.kafka.v2+json",
-                                "value.converter" to "org.apache.kafka.connect.storage.StringConverter",
-                                "confluent.topic.bootstrap.servers" to "localhost:9092",
-                                "confluent.topic.replication.factor" to "1"
-                        )),
-                headers = mapOf("Content-Type" to "application/json"))
-
-        logger.debug(response)
-        return response
-
-    }
 
     fun subscribeEvent(payload: String): String {
         val jsonFormattedPayload = JSONObject(payload)
