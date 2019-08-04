@@ -50,7 +50,8 @@ class Confluent {
         val collections = ArrayList<NewTopic>()
         collections.add(newTopic)
         createAdminClient().createTopics(collections)
-        logger.debug(createPublisherStream(namespace.id!!))
+        createPublisherStream(namespace.id!!)
+        logger.debug("stream created")
         return "topic created"
     }
 
@@ -59,7 +60,7 @@ class Confluent {
         val jsonFormattedPayload = JSONObject(payload)
         logger.debug(String.format("#### -> Publishing to topic -> %s", (namespace + "." + event)))
         val jsonPayloadToTopic = JSONObject()
-        jsonPayloadToTopic.put("eventType", namespace + "/" + event)
+        jsonPayloadToTopic.put("eventType", event)
         jsonPayloadToTopic.put("data", jsonFormattedPayload.getJSONObject("data"))
         createProducer().send(ProducerRecord(namespace, jsonPayloadToTopic.toString()))
         return "success"
